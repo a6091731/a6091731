@@ -1,0 +1,42 @@
+# ══════════════════════════════════════════════════════════════════
+#  GitHub Profile — Contribution Snake Auto-Generator
+#  Cadence : Every 12h (schedule) + on push to main + manual trigger
+#  Outputs : Light SVG + Dark SVG → pushed to `output` branch
+#  Consumed by README.md via <picture> for dark/light mode support
+# ══════════════════════════════════════════════════════════════════
+
+name: 🐍 Contribution Snake
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"    # Refresh every 12 hours
+  workflow_dispatch:            # Allow manual trigger from Actions tab
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  generate-snake:
+    name: Generate SVG
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 🎨 Render snake (light + dark palettes)
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-contribution-grid-snake.svg
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+
+      - name: 🚀 Publish to output branch
+        uses: crazy-max/ghaction-github-pages@v3.1.0
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
